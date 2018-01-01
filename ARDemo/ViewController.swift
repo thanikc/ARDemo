@@ -21,6 +21,9 @@ class ViewController: UIViewController, ARSCNViewDelegate {
   var animations = [String: CAAnimation]()
   var idle: Bool = true
   
+  // Create a session configuration
+  let configuration = ARWorldTrackingConfiguration()
+
   override func viewDidLoad() {
     super.viewDidLoad()
     
@@ -35,6 +38,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     
     // Set the scene to the view
     sceneView.scene = scene
+    sceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints, ARSCNDebugOptions.showWorldOrigin]
     
     // Load the DAE animations
     loadAnimations()
@@ -42,9 +46,6 @@ class ViewController: UIViewController, ARSCNViewDelegate {
   
   override func viewWillAppear(_ animated: Bool) {
     super.viewWillAppear(animated)
-    
-    // Create a session configuration
-    let configuration = ARWorldTrackingConfiguration()
     
     // Run the view's session
     sceneView.session.run(configuration)
@@ -80,6 +81,21 @@ class ViewController: UIViewController, ARSCNViewDelegate {
       idle = !idle
       return
     }
+  }
+  
+  @IBAction func add(_ sender: Any) {
+    resetScene()
+    sceneView.session.pause()
+    self.loadAnimations()
+    sceneView.session.run(configuration)
+  }
+  
+  func resetScene() {
+    sceneView.session.pause()
+    sceneView.scene.rootNode.enumerateChildNodes { (node, _) in
+      node.removeFromParentNode()
+    }
+    sceneView.session.run(configuration, options: [.resetTracking, .removeExistingAnchors])
   }
   
   // MARK: - ARSCNViewDelegate
@@ -123,7 +139,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     }
     
     // Set up some properties
-    node.position = SCNVector3(0, -2, -2)
+    node.position = SCNVector3(0, -2, -3)
     node.scale = SCNVector3(0.01, 0.01, 0.01)
     
     // Add the node to the scene
